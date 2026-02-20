@@ -1,0 +1,131 @@
+<div class="task-form-container">
+  <div class="form-header">
+    <h3>{{ isEditMode ? 'Edit Task' : 'Create New Task' }}</h3>
+    <span *ngIf="isTaskCompleted" class="completed-badge">✓ Completed</span>
+  </div>
+
+  <!-- Completed task warning -->
+  <div class="warning-message" *ngIf="isTaskCompleted">
+    <span class="warning-icon">🔒</span>
+    <div>
+      <strong>Completed tasks cannot be edited</strong>
+      <p>This task is marked as completed. To make changes, first change its status to "To Do" or "In Progress" from the task list.</p>
+    </div>
+  </div>
+
+  <!-- Error message -->
+  <div class="error-message" *ngIf="error && !isTaskCompleted">
+    <span class="error-icon">⚠️</span>
+    {{ error }}
+  </div>
+
+  <form [formGroup]="taskForm" (ngSubmit)="onSubmit()">
+    <!-- Title field -->
+    <div class="form-group">
+      <label for="title">Title <span class="required">*</span></label>
+      <input
+        type="text"
+        id="title"
+        formControlName="title"
+        placeholder="Enter task title"
+        [class.error]="hasError('title')"
+      />
+      <div class="error-text" *ngIf="hasError('title')">
+        {{ getErrorMessage('title') }}
+      </div>
+    </div>
+
+    <!-- Description field -->
+    <div class="form-group">
+      <label for="description">Description <span class="required">*</span></label>
+      <textarea
+        id="description"
+        formControlName="description"
+        rows="4"
+        placeholder="Enter task description"
+        [class.error]="hasError('description')"
+      ></textarea>
+      <div class="error-text" *ngIf="hasError('description')">
+        {{ getErrorMessage('description') }}
+      </div>
+    </div>
+
+    <!-- Status field -->
+    <div class="form-group">
+      <label for="status">Status <span class="required">*</span></label>
+      <select
+        id="status"
+        formControlName="status"
+        [class.error]="hasError('status')"
+      >
+        <option *ngFor="let status of taskStatuses" [value]="status.value">
+          {{ status.label }}
+        </option>
+      </select>
+      <div class="error-text" *ngIf="hasError('status')">
+        {{ getErrorMessage('status') }}
+      </div>
+    </div>
+
+    <!-- Priority field -->
+    <div class="form-group">
+      <label for="priority">Priority <span class="required">*</span></label>
+      <select
+        id="priority"
+        formControlName="priority"
+        [class.error]="hasError('priority')"
+      >
+        <option *ngFor="let priority of priorities" [value]="priority.value">
+          {{ priority.icon }} {{ priority.label }}
+        </option>
+      </select>
+      <div class="error-text" *ngIf="hasError('priority')">
+        {{ getErrorMessage('priority') }}
+      </div>
+    </div>
+
+    <!-- Due Date field -->
+    <div class="form-group">
+      <label for="dueDate">
+        Due Date 
+        <span class="required" *ngIf="taskForm.get('priority')?.value === 'high'">*</span>
+        <span class="hint" *ngIf="taskForm.get('priority')?.value === 'high'">(Required for high priority, within 7 days)</span>
+      </label>
+      <input
+        type="date"
+        id="dueDate"
+        formControlName="dueDate"
+        [class.error]="hasError('dueDate')"
+      />
+      <div class="error-text" *ngIf="hasError('dueDate')">
+        {{ getErrorMessage('dueDate') }}
+      </div>
+    </div>
+
+    <!-- Form-level validation errors -->
+    <div class="error-message" *ngIf="getFormErrorMessage() && taskForm.touched">
+      <span class="error-icon">⚠️</span>
+      {{ getFormErrorMessage() }}
+    </div>
+
+    <!-- Form actions -->
+    <div class="form-actions">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="onCancel()"
+        [disabled]="loading$ | async"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="taskForm.invalid || (loading$ | async)"
+      >
+        <span *ngIf="loading$ | async" class="btn-spinner"></span>
+        {{ (loading$ | async) ? 'Saving...' : (isEditMode ? 'Update Task' : 'Create Task') }}
+      </button>
+    </div>
+  </form>
+</div>

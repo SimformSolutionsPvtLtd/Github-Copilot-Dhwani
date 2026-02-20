@@ -1,0 +1,105 @@
+<div class="task-list-container">
+  <div class="task-list-header">
+    <div class="header-left">
+      <h2>Task Management</h2>
+      <!-- Online/Offline Indicator -->
+      <div class="connection-status" [class.online]="online$ | async" [class.offline]="!(online$ | async)">
+        <span class="status-dot"></span>
+        <span class="status-text">{{ (online$ | async) ? 'Online' : 'Offline' }}</span>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="onCreateTask()" [disabled]="showForm">
+      + Add Task
+    </button>
+  </div>
+
+  <!-- Error message -->
+  <div class="error-message" *ngIf="error">
+    <span class="error-icon">⚠️</span>
+    {{ error }}
+  </div>
+
+  <!-- Task form -->
+  <app-task-form
+    *ngIf="showForm"
+    [task]="editingTask"
+    (taskSaved)="onTaskSaved()"
+    (cancelled)="onFormCancelled()"
+  ></app-task-form>
+
+  <!-- Filter section -->
+  <div class="filter-section">
+    <div class="filter-left">
+      <label>Filter by status:</label>
+      <select [(ngModel)]="selectedStatus" (change)="applyFilter()" class="filter-select">
+        <option value="all">All Tasks</option>
+        <option value="todo">To Do</option>
+        <option value="in-progress">In Progress</option>
+        <option value="done">Done</option>
+      </select>
+      
+      <label class="sort-label">Sort by due date:</label>
+      <select [(ngModel)]="sortOrder" (change)="onSortChange(sortOrder)" class="filter-select">
+        <option value="none">No Sorting</option>
+        <option value="asc">Nearest First</option>
+        <option value="desc">Farthest First</option>
+      </select>
+    </div>
+    <div class="drag-hint" *ngIf="selectedStatus === 'all' && filteredTasks.length > 1 && sortOrder === 'none'">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 2V14M3 8L8 13L13 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Drag tasks to reorder</span>
+    </div>
+  </div>
+
+  <!-- Loading spinner -->
+  <div class="loading-spinner" *ngIf="loading$ | async">
+    <div class="spinner"></div>
+    <p>Loading tasks...</p>
+  </div>
+
+  <!-- Task list -->
+  <div class="tasks-container" *ngIf="!(loading$ | async)">
+    <!-- Empty State -->
+    <div *ngIf="filteredTasks.length === 0" class="empty-state">
+      <div class="empty-icon">
+        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 26.6667H48M16 37.3333H48M21.3333 48H42.6667C44.0812 48 45.4377 47.4381 46.4379 46.4379C47.4381 45.4377 48 44.0812 48 42.6667V21.3333C48 19.9188 47.4381 18.5623 46.4379 17.5621C45.4377 16.5619 44.0812 16 42.6667 16H21.3333C19.9188 16 18.5623 16.5619 17.5621 17.5621C16.5619 18.5623 16 19.9188 16 21.3333V42.6667C16 44.0812 16.5619 45.4377 17.5621 46.4379C18.5623 47.4381 19.9188 48 21.3333 48Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 class="empty-title">
+        {{ selectedStatus === 'all' ? 'No tasks yet' : 'No ' + getStatusText(selectedStatus) + ' tasks' }}
+      </h3>
+      <p class="empty-description">
+        {{ selectedStatus === 'all' 
+          ? 'Get started by creating your first task' 
+          : 'Try selecting a different status or create a new task' }}
+      </p>
+      <button *ngIf="selectedStatus === 'all'" class="btn btn-primary" (click)="onCreateTask()">
+        + Create Your First Task
+      </button>
+    </div>
+
+    <!-- Task Cards with Drag & Drop -->
+    <div 
+      cdkDropList
+      [cdkDropListDisabled]="selectedStatus !== 'all' || sortOrder !== 'none'"
+      (cdkDropListDropped)="onTaskDrop($event)"
+      class="tasks-grid">
+      <app-task-card
+        *ngFor="let task of filteredTasks; trackBy: trackByTaskId"
+        cdkDrag
+        [cdkDragDisabled]="selectedStatus !== 'all' || sortOrder !== 'none'"
+        [task]="task"
+        [availableStatuses]="getAvailableStatuses()"
+        (edit)="onEditTask($event)"
+        (delete)="onDeleteTask($event)"
+        (statusChange)="onStatusChange($event.task, $event.newStatus)"
+      >
+        <!-- Drag handle placeholder -->
+        <div class="drag-placeholder" *cdkDragPlaceholder></div>
+      </app-task-card>
+    </div>
+  </div>
+</div>
