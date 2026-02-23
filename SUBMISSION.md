@@ -69,17 +69,6 @@ Throughout this project, GitHub Copilot was extensively used for:
 
 4. **Cache Synchronization**: Ensuring localStorage cache stayed synchronized with API responses while handling offline scenarios. Implemented a strategy of caching after every successful operation and merging metadata on retrieval.
 
-## Time Breakdown
-<!-- Optional: Approximate time spent on each phase -->
-
-- Planning & Setup: 15 minutes
-- Core Implementation (CRUD + Forms): 45 minutes
-- Testing & Debugging (TypeScript errors): 20 minutes
-- UI Enhancement (TaskCard + Design System): 40 minutes
-- Drag-and-Drop Implementation: 35 minutes
-- Offline Support Implementation: 30 minutes
-- Priority Field Architecture: 55 minutes
-- Documentation & Diagrams: 25 minutes
 
 **Total Time**: ~4.5 hours
 
